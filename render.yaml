@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: ctf-chatbot
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: STREAMLIT_SERVER_PORT
+        value: 10000
