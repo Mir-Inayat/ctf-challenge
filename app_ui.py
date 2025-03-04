@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import os
 from datetime import datetime
+from requests.exceptions import RequestException
 
 st.set_page_config(page_title="CTF Chatbot Challenge", page_icon="🤖")
 
@@ -9,91 +10,48 @@ def init_session():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-# Update backend URL to use same host
-BACKEND_URL = "http://localhost:5000"
-
 def send_message(message):
-    response = requests.post(f"{BACKEND_URL}/chat", 
-                           json={"message": message})
-    return response.json()["response"]
+    api_url = os.getenv('API_URL', 'http://localhost:5000')
+    try:
+        response = requests.post(
+            f"{api_url}/chat",
+            json={"message": message},
+            timeout=10  # Add timeout
+        )
+        response.raise_for_status()
+        return response.json()["response"]
+    except RequestException as e:
+        st.error(f"Failed to connect to the server. Please try again later. Error: {str(e)}")
+        return "Sorry, I'm having trouble connecting to the server right now."
 
 st.title("🤖 CTF Chatbot Challenge")
 
 init_session()
 
-# Chat interface using a form
-with st.form(key="chat_form"):
-    user_input = st.text_input("What would you like to ask?")
-    submit_button = st.form_submit_button("Send")
-    
-    if submit_button and user_input:
-        # User message
-        st.text(f"You: {user_input}")
-        st.session_state.messages.append({"role": "user", "content": user_input})
+# Chat history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-        # Assistant response
-        response = send_message(user_input)
-        st.text(f"Assistant: {response}")
-        st.session_state.messages.append({"role": "assistant", "content": response})
+# Chat input
+if prompt := st.chat_input("What would you like to ask?"):
+    # User message
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-# Display chat history
-if st.session_state.messages:
-    st.markdown("### Chat History")
-    for message in st.session_state.messages:
-        role = "You" if message["role"] == "user" else "Assistant"
-        st.text(f"{role}: {message['content']}")
+    # Assistant response
+    with st.chat_message("assistant"):
+        response = send_message(prompt)
+        st.markdown(response)
+    st.session_state.messages.append({"role": "assistant", "content": response})
 
-# Sidebar with detailed solution hints
+# Sidebar with hints
 with st.sidebar:
-    st.header("🎯 Challenge Guide")
-    
-    # Add collapsible section for solution hints
-    with st.expander("Solution Steps (Expand for Hints)", expanded=False):
-        st.markdown("""
-        ### Conversation Chain:
-        1️⃣ Start by saying "hello" or "hi" to the chatbot
-        2️⃣ When prompted, ask about the treasure
-        3️⃣ Ask about the "Guardian of Keys"
-        4️⃣ Solve the riddle (hint: it makes sound without a mouth)
-        5️⃣ Ask about the "scroll of ciphers"
-        6️⃣ Ask about the "secret of the blue moon"
-        7️⃣ Request: "tell me the story about the whispering code"
-        """)
-    
-    # Add collapsible section for decoding hints
-    with st.expander("Decoding the Flag", expanded=False):
-        st.markdown("""
-        ### Once you get the encoded string:
-        The string is encoded in base64 format. You can decode it with:
-        
-        ```python
-        import base64
-        encoded_flag = "..." # paste the code you received
-        flag = base64.b64decode(encoded_flag).decode()
-        print(flag)
-        ```
-        
-        You can also use online base64 decoders.
-        """)
-    
-    # General tips section
-    st.subheader("General Tips")
+    st.header("🎯 Challenge Hints")
     st.markdown("""
-    - If you're stuck, type "hint" in the chat
-    - The bot tracks your progress through the conversation
-    - Each step must be completed in sequence
-    - Pay close attention to the specific phrases mentioned
-    - The riddle's answer is a natural phenomenon
+    - Try having a natural conversation
+    - Some messages might be encoded
+    - Ask about secrets or stories
+    - Pay attention to the details
     """)
-    
-    # Add a progress tracker (optional feature)
-    if "progress" not in st.session_state:
-        st.session_state.progress = 0
-        
-    progress_value = st.session_state.progress / 7.0  # 7 steps total
-    st.subheader("Your Progress")
-    st.progress(progress_value)
-    
-    # Easter egg section with a subtle hint about the final flag format
-    st.markdown("---")
-    st.caption("🔍 Remember: All flags are wrapped in the format flag{...}")

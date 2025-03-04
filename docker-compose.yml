@@ -1,28 +1,16 @@
-version: '3'
-
+version: '3.8'
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+  chatbot:
+    build: .
     ports:
       - "5000:5000"
-    networks:
-      - ctf-network
-
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports:
       - "8501:8501"
-    depends_on:
-      - backend
-    networks:
-      - ctf-network
     environment:
-      - BACKEND_URL=http://backend:5000
-
-networks:
-  ctf-network:
-    driver: bridge
+      - FLASK_APP=flag.py
+      - FLASK_ENV=production
+      - API_URL=http://localhost:5000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -2,17 +2,16 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Copy only necessary files
+RUN apt-get update && apt-get install -y supervisor
+
 COPY requirements.txt .
-COPY flag.py .
-COPY app_ui.py .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+COPY . .
 
-# Expose port (will use PORT from environment variable)
-EXPOSE 8501
+# Copy supervisor configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Start both services using streamlit
-CMD streamlit run app_ui.py --server.port $PORT
+EXPOSE 5000 8501
+
+CMD ["/usr/bin/supervisord"]

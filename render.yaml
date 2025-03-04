@@ -1,6 +1,0 @@
-services:
-  - name: ctf-challenge
-    type: web
-    env: docker
-    dockerfilePath: Dockerfile
-    plan: free
