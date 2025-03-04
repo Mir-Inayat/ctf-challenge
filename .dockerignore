@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+.git
+.gitignore
+README.md
+deploy.bat
+deploy.sh
+# Remove *.sh from ignore list to allow render_start.sh
