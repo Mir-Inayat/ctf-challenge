@@ -6,7 +6,9 @@ COPY requirements.txt .
 COPY app_ui.py .
 COPY render_start.sh .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Update pip first and install with specific versions
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Fix the script permissions and line endings
 RUN chmod +x render_start.sh && \

@@ -9,8 +9,8 @@ def init_session():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-# Get backend URL from environment variable or use default
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:5000')
+# Update backend URL to use same host
+BACKEND_URL = "http://localhost:5000"
 
 def send_message(message):
     response = requests.post(f"{BACKEND_URL}/chat", 

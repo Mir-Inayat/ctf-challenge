@@ -1,23 +1,6 @@
 services:
-  - name: ctf-backend
+  - name: ctf-challenge
     type: web
     env: docker
-    dockerfilePath: ./Dockerfile.backend
-    buildCommand: docker build -t ctf-backend -f Dockerfile.backend .
-    envVars:
-      - key: PORT
-        value: 5000
-    plan: free
-
-  - name: ctf-frontend
-    type: web
-    env: docker
-    dockerfilePath: ./Dockerfile.frontend
-    buildCommand: docker build -t ctf-frontend -f Dockerfile.frontend .
-    envVars:
-      - key: BACKEND_URL
-        fromService:
-          name: ctf-backend
-          type: web
-          property: host
+    dockerfilePath: Dockerfile
     plan: free
