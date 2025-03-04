@@ -1,8 +1,21 @@
 services:
-  - type: web
-    name: ctf-chatbot
+  - name: ctf-backend
+    type: web
     env: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile.backend
     envVars:
-      - key: STREAMLIT_SERVER_PORT
-        value: 10000
+      - key: PORT
+        value: 5000
+    plan: free
+
+  - name: ctf-frontend
+    type: web
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: ctf-backend
+          type: web
+          property: host
+    plan: free

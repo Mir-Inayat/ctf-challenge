@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from transformers import pipeline
 import base64
 import random
+import os
 
 app = Flask(__name__)
 
@@ -123,4 +124,5 @@ def chat():
     return jsonify({"response": response})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host="0.0.0.0", port=port)

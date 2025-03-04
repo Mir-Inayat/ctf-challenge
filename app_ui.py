@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import os
 from datetime import datetime
 
 st.set_page_config(page_title="CTF Chatbot Challenge", page_icon="🤖")
@@ -8,8 +9,11 @@ def init_session():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+# Get backend URL from environment variable or use default
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:5000')
+
 def send_message(message):
-    response = requests.post("http://localhost:5000/chat", 
+    response = requests.post(f"{BACKEND_URL}/chat", 
                            json={"message": message})
     return response.json()["response"]
 
@@ -17,23 +21,27 @@ st.title("🤖 CTF Chatbot Challenge")
 
 init_session()
 
-# Chat history
+# Replace chat input with standard text input
+user_input = st.text_input("What would you like to ask?", key="user_input")
+if st.button("Send"):
+    if user_input:
+        # User message
+        st.text(f"You: {user_input}")
+        st.session_state.messages.append({"role": "user", "content": user_input})
+
+        # Assistant response
+        response = send_message(user_input)
+        st.text(f"Assistant: {response}")
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
+        # Clear input
+        st.session_state.user_input = ""
+
+# Display chat history
+st.markdown("### Chat History")
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Chat input
-if prompt := st.chat_input("What would you like to ask?"):
-    # User message
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    # Assistant response
-    with st.chat_message("assistant"):
-        response = send_message(prompt)
-        st.markdown(response)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    role = "You" if message["role"] == "user" else "Assistant"
+    st.text(f"{role}: {message['content']}")
 
 # Sidebar with detailed solution hints
 with st.sidebar:
