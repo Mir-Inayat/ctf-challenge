@@ -21,10 +21,12 @@ st.title("🤖 CTF Chatbot Challenge")
 
 init_session()
 
-# Replace chat input with standard text input
-user_input = st.text_input("What would you like to ask?", key="user_input")
-if st.button("Send"):
-    if user_input:
+# Chat interface using a form
+with st.form(key="chat_form"):
+    user_input = st.text_input("What would you like to ask?")
+    submit_button = st.form_submit_button("Send")
+    
+    if submit_button and user_input:
         # User message
         st.text(f"You: {user_input}")
         st.session_state.messages.append({"role": "user", "content": user_input})
@@ -34,14 +36,12 @@ if st.button("Send"):
         st.text(f"Assistant: {response}")
         st.session_state.messages.append({"role": "assistant", "content": response})
 
-        # Clear input
-        st.session_state.user_input = ""
-
 # Display chat history
-st.markdown("### Chat History")
-for message in st.session_state.messages:
-    role = "You" if message["role"] == "user" else "Assistant"
-    st.text(f"{role}: {message['content']}")
+if st.session_state.messages:
+    st.markdown("### Chat History")
+    for message in st.session_state.messages:
+        role = "You" if message["role"] == "user" else "Assistant"
+        st.text(f"{role}: {message['content']}")
 
 # Sidebar with detailed solution hints
 with st.sidebar:
